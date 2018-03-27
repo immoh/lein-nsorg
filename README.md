@@ -23,6 +23,10 @@ Dependency information:
 
 ```
 lein nsorg
+```
+
+Example output:
+```
 ...
 in ./src/perf/clojure/clojure/java/perf_jdbc.clj:
    These test compare the raw performance (against an in-memory H2 database)
