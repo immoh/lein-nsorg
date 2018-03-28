@@ -16,7 +16,7 @@ Also available as Clojure library: [nsorg](https://github.com/immoh/nsorg/)
 Dependency information:
 
 ```clj
-[lein-nsorg "0.1.0-SNAPSHOT"]
+[lein-nsorg "0.1.0"]
 ```
 
 ## Usage
