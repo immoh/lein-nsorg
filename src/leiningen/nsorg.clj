@@ -45,28 +45,31 @@
                                    (when (pos? replaces)
                                      (format "fixed %s files" replaces))])))
 
+(defn organize-ns-form! [file replace? interactive?]
+  (let [path (relativize-path (.getAbsolutePath file))
+        original-source (slurp file)
+        modified-source (nsorg/rewrite-ns-form original-source)
+        diff-chunks (diff/diff-chunks original-source modified-source)
+        problem? (seq diff-chunks)]
+    (when problem?
+      (lein/info (format "in %s:" path))
+      (lein/info (diff/format-diff diff-chunks))
+      (lein/info))
+    (let [replaced? (when (and problem?
+                               replace?
+                               (or (not interactive?)
+                                   (prompt! "Replace?")))
+                      (spit file modified-source)
+                      true)]
+      {:files    1
+       :problems (if problem? 1 0)
+       :replaces (if replaced? 1 0)})))
+
 (defn organize-ns-forms! [paths options]
   (loop [files (find-clojure-files paths)
          result {:files 0 :problems 0 :replaces 0}]
     (if-let [file (first files)]
-      (let [path (relativize-path (.getAbsolutePath file))
-            original-source (slurp file)
-            modified-source (nsorg/rewrite-ns-form original-source)
-            diff-chunks (diff/diff-chunks original-source modified-source)
-            problem? (seq diff-chunks)]
-        (when problem?
-          (lein/info (format "in %s:" path))
-          (lein/info (diff/format-diff diff-chunks))
-          (lein/info))
-        (let [replaced? (when (and problem?
-                                   (:replace options)
-                                   (or (not (:interactive options))
-                                       (prompt! "Replace?")))
-                          (spit file modified-source)
-                          true)]
-          (recur (rest files) (merge-with + result {:files    1
-                                                    :problems (if problem? 1 0)
-                                                    :replaces (if replaced? 1 0)}))))
+      (recur (rest files) (merge-with + result (organize-ns-form! file (:replace options) (:interactive options))))
       result)))
 
 (defn get-paths [arguments project]
