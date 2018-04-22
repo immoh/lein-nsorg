@@ -1,6 +1,7 @@
 (ns leiningen.nsorg
   "Organize ns forms in source files."
   (:require [clojure.java.io :as io]
+            [clojure.stacktrace]
             [clojure.string]
             [clojure.tools.cli :as cli]
             [leiningen.core.main :as lein]
@@ -36,40 +37,49 @@
 (defn relativize-path [path]
   (str (.relativize (->absolute-path "") (->absolute-path path))))
 
-(defn summarize [{:keys [replace interactive]} {:keys [files problems replaces]}]
+(defn summarize [{:keys [replace interactive]} {:keys [files errors problems replaces]}]
   (clojure.string/join ", " (keep identity
                                   [(format "Checked %s files" files)
-                                   (cond
-                                     (zero? problems) "all good!"
-                                     (or (not replace) interactive) (format "found problems in %s files" problems))
+                                   (when (and (zero? errors) (zero? problems))
+                                     "all good!")
+                                   (when (pos? errors)
+                                     (format "failed to check %s files" errors))
+                                   (when (and (pos? problems)
+                                              (or (not replace) interactive))
+                                     (format "found problems in %s files" problems))
                                    (when (pos? replaces)
                                      (format "fixed %s files" replaces))])))
 
 (defn organize-ns-form! [file replace? interactive?]
-  (let [path (relativize-path (.getAbsolutePath file))
-        original-source (slurp file)
-        modified-source (nsorg/rewrite-ns-form original-source)
-        diff-chunks (diff/diff-chunks original-source modified-source)
-        problem? (seq diff-chunks)]
-    (when problem?
-      (lein/info (format "in %s:" path))
-      (lein/info (diff/format-diff diff-chunks))
-      (lein/info))
-    (let [replaced? (when (and problem?
-                               replace?
-                               (or (not interactive?)
-                                   (prompt! "Replace?")))
-                      (spit file modified-source)
-                      true)]
-      {:files    1
-       :problems (if problem? 1 0)
-       :replaces (if replaced? 1 0)})))
+  (let [path (relativize-path (.getAbsolutePath file))]
+    (try
+      (let [original-source (slurp file)
+            modified-source (nsorg/rewrite-ns-form original-source)
+            diff-chunks (diff/diff-chunks original-source modified-source)
+            problem? (seq diff-chunks)]
+        (when problem?
+          (lein/info (format "in %s:" path))
+          (lein/info (diff/format-diff diff-chunks))
+          (lein/info))
+        (let [replaced? (when (and problem?
+                                   replace?
+                                   (or (not interactive?)
+                                       (prompt! "Replace?")))
+                          (spit file modified-source)
+                          true)]
+          {:files    1
+           :problems (if problem? 1 0)
+           :replaces (if replaced? 1 0)}))
+      (catch Throwable t
+        (lein/warn (format "Failed to check path %s:" path))
+        (lein/warn (with-out-str (clojure.stacktrace/print-stack-trace t)))
+        {:errors 1}))))
 
 (defn organize-ns-forms! [paths options]
   (reduce
     (fn [result file]
       (merge-with + result (organize-ns-form! file (:replace options) (:interactive options))))
-    {:files 0 :problems :replaces 0}
+    {:errors 0 :files 0 :problems 0 :replaces 0}
     (find-clojure-files paths)))
 
 (defn get-paths [arguments project]
@@ -98,7 +108,8 @@ Options:
     (lein/info)
     (let [result (organize-ns-forms! paths options)
           summary (summarize options result)]
-      (if (and (not (:replace options))
-               (pos? (:problems result)))
+      (if (or (pos? (:errors result))
+              (and (pos? (:problems result))
+                   (not (:replace options))))
         (lein/abort summary)
         (lein/info summary)))))

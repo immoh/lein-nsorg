@@ -6,13 +6,17 @@
   (fact
     "Summary contains counts of checked files, problematic files and fixed files"
     (nsorg/summarize {:replace ?replace :interactive ?interactive}
-                     {:files ?files :problems ?problems :replaces ?replaces})
+                     {:files ?files :errors ?errors :problems ?problems :replaces ?replaces})
     => ?summary)
-  ?replace ?interactive ?files ?problems ?replaces ?summary
-  false    false        6      0         0         "Checked 6 files, all good!"
-  false    false        6      3         0         "Checked 6 files, found problems in 3 files"
-  true     false        6      3         3         "Checked 6 files, fixed 3 files"
-  true     true         6      3         2         "Checked 6 files, found problems in 3 files, fixed 2 files")
+  ?replace ?interactive ?files ?errors ?problems ?replaces ?summary
+  false    false        6      0       0         0         "Checked 6 files, all good!"
+  false    false        6      2       0         0         "Checked 6 files, failed to check 2 files"
+  false    false        6      0       3         0         "Checked 6 files, found problems in 3 files"
+  false    false        6      2       3         0         "Checked 6 files, failed to check 2 files, found problems in 3 files"
+  true     false        6      0       3         3         "Checked 6 files, fixed 3 files"
+  true     false        6      2       3         3         "Checked 6 files, failed to check 2 files, fixed 3 files"
+  true     true         6      0       3         2         "Checked 6 files, found problems in 3 files, fixed 2 files"
+  true     true         6      2       3         2         "Checked 6 files, failed to check 2 files, found problems in 3 files, fixed 2 files" )
 
 (tabular
   (fact
