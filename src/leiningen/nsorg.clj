@@ -66,11 +66,11 @@
        :replaces (if replaced? 1 0)})))
 
 (defn organize-ns-forms! [paths options]
-  (loop [files (find-clojure-files paths)
-         result {:files 0 :problems 0 :replaces 0}]
-    (if-let [file (first files)]
-      (recur (rest files) (merge-with + result (organize-ns-form! file (:replace options) (:interactive options))))
-      result)))
+  (reduce
+    (fn [result file]
+      (merge-with + result (organize-ns-form! file (:replace options) (:interactive options))))
+    {:files 0 :problems :replaces 0}
+    (find-clojure-files paths)))
 
 (defn get-paths [arguments project]
   (or (seq arguments)
