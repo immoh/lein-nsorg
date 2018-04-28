@@ -49,12 +49,13 @@
   (loop [files (find-clojure-files paths)
          result {:files (count files) :problems 0 :replaces 0}]
     (if-let [file (first files)]
-      (let [original-source (slurp file)
+      (let [path (relativize-path (.getAbsolutePath file))
+            original-source (slurp file)
             modified-source (nsorg/rewrite-ns-form original-source)
             diff-chunks (diff/diff-chunks original-source modified-source)
             problem? (seq diff-chunks)]
         (when problem?
-          (lein/info (format "in %s:" (relativize-path (.getAbsolutePath file))))
+          (lein/info (format "in %s:" path))
           (lein/info (diff/format-diff diff-chunks))
           (lein/info))
         (let [replaced? (when (and problem?
