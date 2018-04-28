@@ -47,7 +47,7 @@
 
 (defn organize-ns-forms! [paths options]
   (loop [files (find-clojure-files paths)
-         result {:files (count files) :problems 0 :replaces 0}]
+         result {:files 0 :problems 0 :replaces 0}]
     (if-let [file (first files)]
       (let [path (relativize-path (.getAbsolutePath file))
             original-source (slurp file)
@@ -64,7 +64,8 @@
                                        (prompt! "Replace?")))
                           (spit file modified-source)
                           true)]
-          (recur (rest files) (merge-with + result {:problems (if problem? 1 0)
+          (recur (rest files) (merge-with + result {:files    1
+                                                    :problems (if problem? 1 0)
                                                     :replaces (if replaced? 1 0)}))))
       result)))
 
