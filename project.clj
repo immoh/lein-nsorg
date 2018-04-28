@@ -1,4 +1,4 @@
-(defproject lein-nsorg "0.1.4"
+(defproject lein-nsorg "0.2.0-SNAPSHOT"
   :description "Leiningen plugin for organizing ns form"
   :url "https://github.com/immoh/lein-nsorg"
   :license {:name "Eclipse Public License"
