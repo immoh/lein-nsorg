@@ -4,9 +4,9 @@ Leiningen plugin for organizing `ns` form in a way that whitespace and comments 
 
 Rules to apply are fully customizable; the default implementation
 
-* sorts `:require`, `:require-macros`, `:use` and `:use-macros` libspecs alphabetically
-* sorts `:import` class names alphabetically
-* sorts `:exclude`, `:only`, `:refer`, `:refer-macros` and `:rename` options alphabetically
+* sorts `:require`, `:require-macros`, `:use` and `:use-macros` libspecs alphabetically and removes duplicates
+* sorts `:import` class names alphabetically and removes duplicates
+* sorts `:exclude`, `:only`, `:refer`, `:refer-macros` and `:rename` options alphabetically and removes duplicates
 
 Also available as Clojure library: [nsorg](https://github.com/immoh/nsorg/)
 
@@ -16,7 +16,7 @@ Also available as Clojure library: [nsorg](https://github.com/immoh/nsorg/)
 Dependency information:
 
 ```clj
-[lein-nsorg "0.1.4"]
+[lein-nsorg "0.2.0"]
 ```
 
 ## Usage
