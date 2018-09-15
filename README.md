@@ -1,4 +1,4 @@
-# lein-nsorg [![Build Status](https://travis-ci.org/immoh/lein-nsorg.svg?branch=master)](https://travis-ci.org/immoh/lein-nsorg) [![Dependencies Status](https://jarkeeper.com/immoh/lein-nsorg/status.svg)](https://jarkeeper.com/immoh/lein-nsorg)
+# lein-nsorg [![Build Status](https://travis-ci.org/immoh/lein-nsorg.svg?branch=master)](https://travis-ci.org/immoh/lein-nsorg)
 
 Leiningen plugin for organizing `ns` form in a way that whitespace and comments are preserved.
 
