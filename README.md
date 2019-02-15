@@ -60,6 +60,14 @@ If no locations are given default location is:
 * current directory if plugin is run outside Leiningen project
 
 
+### Ignoring files
+
+You can ignore a specific file or directory by excluding it from command-line:
+
+```
+lein nsorg --exclude src/my-project/broken_file.clj --exclude test
+```
+
 ### Apply changes automatically
 
 By default lein-nsorg prints diffs for suggested changes. Changes can be applied automatically to source files with the

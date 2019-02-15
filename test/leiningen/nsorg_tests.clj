@@ -33,8 +33,7 @@
     (= expected-file-path (.getPath file))))
 
 (fact
-  "Finds Clojure files recursively"
-  (nsorg/find-clojure-files ["test_files"]) => (just [(file-matcher "test_files/core.clj")
-                                                      (file-matcher "test_files/core.cljc")
-                                                      (file-matcher "test_files/core.cljs")
-                                                      (file-matcher "test_files/foo/bar.cljc")]))
+  "Finds Clojure files recursively. Ignore files in ignored-paths."
+  (nsorg/find-clojure-files ["test_files"] ["test_files/foo/bar.cljc"]) => (just [(file-matcher "test_files/core.clj")
+                                                                                  (file-matcher "test_files/core.cljc")
+                                                                                  (file-matcher "test_files/core.cljs")]))
