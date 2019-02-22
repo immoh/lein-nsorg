@@ -14,11 +14,20 @@
   (and (.isFile file)
        (re-matches #".+\.clj.?" (.getName file))))
 
-(defn find-clojure-files [paths]
+(defn excluded-file? [excluded-paths ^File file]
+  (if-not ((set excluded-paths) file)
+    file))
+
+(defn paths->file-seq [paths]
   (->> paths
        (map io/file)
-       (mapcat file-seq)
+       (mapcat file-seq)))
+
+(defn find-clojure-files [paths excluded-paths]
+  (->> paths
+       (paths->file-seq)
        (filter clojure-file?)
+       (filter (partial excluded-file? (paths->file-seq excluded-paths)))
        (sort-by (memfn getAbsolutePath))))
 
 (defn prompt! [msg]
@@ -75,12 +84,12 @@
         (lein/warn (with-out-str (clojure.stacktrace/print-stack-trace t)))
         {:errors 1}))))
 
-(defn organize-ns-forms! [paths options]
+(defn organize-ns-forms! [paths excluded-paths options]
   (reduce
     (fn [result file]
       (merge-with + result (organize-ns-form! file (:replace options) (:interactive options))))
     {:errors 0 :files 0 :problems 0 :replaces 0}
-    (find-clojure-files paths)))
+    (find-clojure-files paths excluded-paths)))
 
 (defn get-paths [arguments project]
   (or (seq arguments)
@@ -97,16 +106,27 @@ and Leiningen is run inside project, project source and test paths are used.
 Otherwise current workign directory is used.
 
 Options:
-  -e, --replace      Apply organizing suggestions to source files.
-  -i, --interactive  Ask before applying suggestion (requires --replace)."
+  -e, --replace       Apply organizing suggestions to source files.
+  -i, --interactive   Ask before applying suggestion (requires --replace).
+  -x, --exclude PATH  Path to exclude from analysis."
   [project & args]
-  (let [{:keys [options arguments]} (cli/parse-opts args [["-e" "--replace"] ["-i" "--interactive"]])
-        paths (map relativize-path (get-paths arguments project))]
+  (let [{:keys [options arguments]} (cli/parse-opts args [["-e" "--replace"]
+                                                          ["-i" "--interactive"]
+                                                          ["-x" "--exclude PATH"
+                                                           :default []
+                                                           :assoc-fn #(update %1 %2 conj %3)]])
+        paths (map relativize-path (get-paths arguments project))
+        excluded-paths (map relativize-path (:exclude options))]
     (lein/info "Checking following paths:")
     (doseq [path (sort paths)]
       (lein/info path))
     (lein/info)
-    (let [result (organize-ns-forms! paths options)
+    (when (seq excluded-paths)
+      (lein/info "Ignoring following paths:")
+      (doseq [ignored-path (sort excluded-paths)]
+        (lein/info ignored-path))
+      (lein/info))
+    (let [result (organize-ns-forms! paths excluded-paths options)
           summary (summarize options result)]
       (if (or (pos? (:errors result))
               (and (pos? (:problems result))
