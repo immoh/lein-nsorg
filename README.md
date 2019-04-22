@@ -8,7 +8,8 @@ Rules to apply are fully customizable; the default implementation
 * sorts `:import` class names alphabetically and removes duplicates
 * sorts `:exclude`, `:only`, `:refer`, `:refer-macros` and `:rename` options alphabetically and removes duplicates
 
-Also available as Clojure library: [nsorg](https://github.com/immoh/nsorg/)
+Also available as Clojure library [nsorg](https://github.com/immoh/nsorg/)
+and command line tool [nsorg-cli](https://github.com/immoh/nsorg-cli/).
 
 
 ## Installation
