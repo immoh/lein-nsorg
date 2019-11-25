@@ -3,5 +3,5 @@
   :url "https://github.com/immoh/lein-nsorg"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nsorg-cli "0.3.0"]]
+  :dependencies [[nsorg-cli "0.3.1"]]
   :eval-in-leiningen true)
